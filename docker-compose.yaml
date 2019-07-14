@@ -17,7 +17,7 @@ services:
     container_name: mysqlServer2
     image: mysql:latest
     ports:
-      - 3307:3307
+      - 3307:3306
     volumes:
       - ./data2:/var/lib/mysql
     environment:
