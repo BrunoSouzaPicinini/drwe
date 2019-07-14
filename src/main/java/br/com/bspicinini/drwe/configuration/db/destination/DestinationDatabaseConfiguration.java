@@ -1,4 +1,4 @@
-package br.com.bspicinini.drwe.dbconfiguration.destination;
+package br.com.bspicinini.drwe.configuration.db.destination;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -18,22 +18,26 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "destinationEntityManagerFactory",
-        transactionManagerRef = "destinationTransactionManager",
+        entityManagerFactoryRef = DestinationDatabaseConfiguration.DESTINATION_ENTITY_MANAGER_FACTORY,
+        transactionManagerRef = DestinationDatabaseConfiguration.DESTINATION_TRANSACTION_MANAGER,
         basePackages = {"br.com.bspicinini.drwe.repository.destination"}
 )
 public class DestinationDatabaseConfiguration {
 
-    @Bean(name = "destinationDataSource")
+    public static final String DESTINATION_ENTITY_MANAGER_FACTORY = "destinationEntityManagerFactory";
+    public static final String DESTINATION_TRANSACTION_MANAGER = "destinationTransactionManager";
+    public static final String DESTINATION_DATA_SOURCE = "destinationDataSource";
+
+    @Bean(name = DESTINATION_DATA_SOURCE)
     @ConfigurationProperties(prefix = "destination.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
-    @Bean(name = "destinationEntityManagerFactory")
+    @Bean(name = DESTINATION_ENTITY_MANAGER_FACTORY)
     public LocalContainerEntityManagerFactoryBean destinationEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
-            @Qualifier("destinationDataSource") DataSource dataSource) {
+            @Qualifier(DESTINATION_DATA_SOURCE) DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
                 .packages("br.com.bspicinini.drwe.model.destination")
@@ -41,9 +45,9 @@ public class DestinationDatabaseConfiguration {
                 .build();
     }
 
-    @Bean(name = "destinationTransactionManager")
+    @Bean(name = DESTINATION_TRANSACTION_MANAGER)
     public PlatformTransactionManager destinationTransactionManager(
-            @Qualifier("destinationEntityManagerFactory") EntityManagerFactory
+            @Qualifier(DESTINATION_ENTITY_MANAGER_FACTORY) EntityManagerFactory
                     destinationEntityManagerFactory
     ) {
         return new JpaTransactionManager(destinationEntityManagerFactory);

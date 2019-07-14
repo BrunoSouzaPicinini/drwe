@@ -1,4 +1,4 @@
-package br.com.bspicinini.drwe.dbconfiguration.origin;
+package br.com.bspicinini.drwe.configuration.db.origin;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -19,24 +19,29 @@ import javax.sql.DataSource;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        entityManagerFactoryRef = "entityManagerFactory",
+        entityManagerFactoryRef = OriginDatabaseConfiguration.ORIGIN_ENTITY_MANAGER_FACTORY,
+        transactionManagerRef = OriginDatabaseConfiguration.ORIGIN_TRANSACTION_MANAGER,
         basePackages = {"br.com.bspicinini.drwe.repository.origin"}
 )
 public class OriginDatabaseConfiguration {
 
+    public static final String ORIGIN_ENTITY_MANAGER_FACTORY = "originEntityManagerFactory";
+    public static final String ORIGIN_TRANSACTION_MANAGER = "originTransactionManager";
+    public static final String ORIGIN_DATA_SOURCE = "originDataSource";
+
     @Primary
-    @Bean(name = "dataSource")
-    @ConfigurationProperties(prefix = "spring.datasource")
+    @Bean(name = ORIGIN_DATA_SOURCE)
+    @ConfigurationProperties(prefix = "origin.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
     @Primary
-    @Bean(name = "entityManagerFactory")
+    @Bean(name = ORIGIN_ENTITY_MANAGER_FACTORY)
     public LocalContainerEntityManagerFactoryBean
     entityManagerFactory(
             EntityManagerFactoryBuilder builder,
-            @Qualifier("dataSource") DataSource dataSource
+            @Qualifier(ORIGIN_DATA_SOURCE) DataSource dataSource
     ) {
         return builder
                 .dataSource(dataSource)
@@ -46,9 +51,9 @@ public class OriginDatabaseConfiguration {
     }
 
     @Primary
-    @Bean(name = "transactionManager")
+    @Bean(name = ORIGIN_TRANSACTION_MANAGER)
     public PlatformTransactionManager transactionManager(
-            @Qualifier("entityManagerFactory") EntityManagerFactory
+            @Qualifier(ORIGIN_ENTITY_MANAGER_FACTORY) EntityManagerFactory
                     entityManagerFactory
     ) {
         return new JpaTransactionManager(entityManagerFactory);
