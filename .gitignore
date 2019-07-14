@@ -21,3 +21,5 @@ build/
 *.ipr
 out/
 
+data/
+data2/
