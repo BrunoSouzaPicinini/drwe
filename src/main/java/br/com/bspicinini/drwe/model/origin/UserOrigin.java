@@ -8,13 +8,20 @@ public class UserOrigin {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int userId;
+    @Column(name = "user_name")
     private String userName;
+    @Column(name = "first_name")
     private String firstName;
+    @Column(name = "last_name")
     private String lastName;
     private String gender;
     private String password;
     private String status;
+
+    public UserOrigin() {
+    }
 
     public UserOrigin(String userName, String firstName, String lastName, String gender, String password, String status) {
         this.userName = userName;

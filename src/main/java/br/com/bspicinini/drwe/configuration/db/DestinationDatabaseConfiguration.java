@@ -1,4 +1,4 @@
-package br.com.bspicinini.drwe.configuration.db.destination;
+package br.com.bspicinini.drwe.configuration.db;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -6,6 +6,7 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -26,14 +27,16 @@ public class DestinationDatabaseConfiguration {
 
     public static final String DESTINATION_ENTITY_MANAGER_FACTORY = "destinationEntityManagerFactory";
     public static final String DESTINATION_TRANSACTION_MANAGER = "destinationTransactionManager";
-    public static final String DESTINATION_DATA_SOURCE = "destinationDataSource";
+    public static final String DESTINATION_DATA_SOURCE = "dataSource";
 
+    @Primary
     @Bean(name = DESTINATION_DATA_SOURCE)
-    @ConfigurationProperties(prefix = "destination.datasource")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
+    @Primary
     @Bean(name = DESTINATION_ENTITY_MANAGER_FACTORY)
     public LocalContainerEntityManagerFactoryBean destinationEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
@@ -45,6 +48,7 @@ public class DestinationDatabaseConfiguration {
                 .build();
     }
 
+    @Primary
     @Bean(name = DESTINATION_TRANSACTION_MANAGER)
     public PlatformTransactionManager destinationTransactionManager(
             @Qualifier(DESTINATION_ENTITY_MANAGER_FACTORY) EntityManagerFactory

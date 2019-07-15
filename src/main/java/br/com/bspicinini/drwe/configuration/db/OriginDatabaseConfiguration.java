@@ -1,4 +1,4 @@
-package br.com.bspicinini.drwe.configuration.db.origin;
+package br.com.bspicinini.drwe.configuration.db;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -6,7 +6,6 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -29,17 +28,14 @@ public class OriginDatabaseConfiguration {
     public static final String ORIGIN_TRANSACTION_MANAGER = "originTransactionManager";
     public static final String ORIGIN_DATA_SOURCE = "originDataSource";
 
-    @Primary
     @Bean(name = ORIGIN_DATA_SOURCE)
     @ConfigurationProperties(prefix = "origin.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().build();
     }
 
-    @Primary
     @Bean(name = ORIGIN_ENTITY_MANAGER_FACTORY)
-    public LocalContainerEntityManagerFactoryBean
-    entityManagerFactory(
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier(ORIGIN_DATA_SOURCE) DataSource dataSource
     ) {
@@ -50,7 +46,6 @@ public class OriginDatabaseConfiguration {
                 .build();
     }
 
-    @Primary
     @Bean(name = ORIGIN_TRANSACTION_MANAGER)
     public PlatformTransactionManager transactionManager(
             @Qualifier(ORIGIN_ENTITY_MANAGER_FACTORY) EntityManagerFactory

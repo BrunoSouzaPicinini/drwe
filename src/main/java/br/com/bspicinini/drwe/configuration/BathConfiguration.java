@@ -1,7 +1,7 @@
 package br.com.bspicinini.drwe.configuration;
 
-import br.com.bspicinini.drwe.configuration.db.destination.DestinationDatabaseConfiguration;
-import br.com.bspicinini.drwe.configuration.db.origin.OriginDatabaseConfiguration;
+import br.com.bspicinini.drwe.configuration.db.DestinationDatabaseConfiguration;
+import br.com.bspicinini.drwe.configuration.db.OriginDatabaseConfiguration;
 import br.com.bspicinini.drwe.listener.JobCompletionNotificationListener;
 import br.com.bspicinini.drwe.model.destination.UserDestination;
 import br.com.bspicinini.drwe.model.origin.UserOrigin;
@@ -37,7 +37,7 @@ public class BathConfiguration {
     @Value("${chunk-size}")
     private Integer chunkSize;
 
-    @Value("${reader-page-size}")
+    @Value("${render-page-size}")
     private Integer readerPageSize;
 
     @Autowired
@@ -72,7 +72,7 @@ public class BathConfiguration {
 
     @Bean(destroyMethod="")
     public ItemReader<UserOrigin> reader() throws Exception {
-        String jpqlQuery = "select se from SourceEntity se";
+        String jpqlQuery = "select se from UserOrigin se";
 
         JpaPagingItemReader<UserOrigin> reader = new JpaPagingItemReader<>();
         reader.setQueryString(jpqlQuery);
