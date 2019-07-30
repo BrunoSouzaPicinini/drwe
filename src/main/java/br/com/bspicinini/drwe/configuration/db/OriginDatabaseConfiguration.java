@@ -16,7 +16,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
 @Configuration
-@EnableTransactionManagement
 @EnableJpaRepositories(
         entityManagerFactoryRef = OriginDatabaseConfiguration.ORIGIN_ENTITY_MANAGER_FACTORY,
         transactionManagerRef = OriginDatabaseConfiguration.ORIGIN_TRANSACTION_MANAGER,

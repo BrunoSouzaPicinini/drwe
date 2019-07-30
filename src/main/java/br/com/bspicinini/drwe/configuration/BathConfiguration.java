@@ -15,14 +15,18 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
+import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JpaPagingItemReader;
+import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableBatchProcessing
@@ -53,7 +57,7 @@ public class BathConfiguration {
                           ItemWriter<UserDestination> writer, ItemProcessor<UserOrigin, UserDestination> processor) {
 
         return stepBuilderFactory.get("firstStep")
-                .<UserOrigin, UserDestination> chunk(chunkSize)
+                .<UserOrigin, UserDestination>chunk(chunkSize)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
@@ -70,7 +74,7 @@ public class BathConfiguration {
                 .build();
     }
 
-    @Bean(destroyMethod="")
+    @Bean(destroyMethod = "")
     public ItemReader<UserOrigin> reader() throws Exception {
         String jpqlQuery = "select se from UserOrigin se";
 
@@ -85,10 +89,13 @@ public class BathConfiguration {
     }
 
     @Bean
-    public ItemWriter<UserDestination> writer() {
-        JpaItemWriter<UserDestination> writer = new JpaItemWriter<>();
-        writer.setEntityManagerFactory(destinationEntityFactory.getObject());
-        return writer;
+    public JdbcBatchItemWriter<UserDestination> writer(final DataSource dataSource) {
+        return new JdbcBatchItemWriterBuilder<UserDestination>()
+                .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+                .sql("INSERT INTO user_details (user_id,user_name,first_name,last_name,gender,password,status) " +
+                        "VALUES (:userId,:userName,:firstName,:lastName,:gender,:password,:status)")
+                .dataSource(dataSource)
+                .build();
     }
 
     @Bean
