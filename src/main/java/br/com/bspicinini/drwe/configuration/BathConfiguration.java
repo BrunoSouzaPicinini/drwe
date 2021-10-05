@@ -6,6 +6,8 @@ import br.com.bspicinini.drwe.listener.JobCompletionNotificationListener;
 import br.com.bspicinini.drwe.model.destination.UserDestination;
 import br.com.bspicinini.drwe.model.origin.UserOrigin;
 import br.com.bspicinini.drwe.processor.UserProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -32,6 +34,8 @@ import javax.sql.DataSource;
 @EnableBatchProcessing
 public class BathConfiguration {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BathConfiguration.class);
+
     @Autowired
     public JobBuilderFactory jobBuilderFactory;
 
@@ -53,6 +57,16 @@ public class BathConfiguration {
     public LocalContainerEntityManagerFactoryBean originEntityFactory;
 
     @Bean
+    public Job importUserJob(JobCompletionNotificationListener listener, Step firstStep) throws Exception {
+        return jobBuilderFactory.get("importUserJob")
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .flow(firstStep)
+                .end()
+                .build();
+    }
+
+    @Bean
     public Step firstStep(StepBuilderFactory stepBuilderFactory, ItemReader<UserOrigin> reader,
                           ItemWriter<UserDestination> writer, ItemProcessor<UserOrigin, UserDestination> processor) {
 
@@ -61,16 +75,6 @@ public class BathConfiguration {
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
-                .build();
-    }
-
-    @Bean
-    public Job importUserJob(JobCompletionNotificationListener listener, Step firstStep) throws Exception {
-        return jobBuilderFactory.get("importUserJob")
-                .incrementer(new RunIdIncrementer())
-                .listener(listener)
-                .flow(firstStep)
-                .end()
                 .build();
     }
 
@@ -89,6 +93,24 @@ public class BathConfiguration {
     }
 
     @Bean
+    public ItemProcessor<UserOrigin, UserDestination> processor() {
+        return (userOrigin) ->  {
+            UserDestination userDestination = new UserDestination(
+                    userOrigin.getUserName(),
+                    userOrigin.getFirstName(),
+                    userOrigin.getLastName(),
+                    userOrigin.getGender(),
+                    userOrigin.getPassword(),
+                    userOrigin.getStatus());
+
+
+            LOGGER.info("Converting (" + userOrigin + ") into (" + userDestination + ")");
+
+            return userDestination;
+        };
+    }
+
+    @Bean
     public JdbcBatchItemWriter<UserDestination> writer(final DataSource dataSource) {
         return new JdbcBatchItemWriterBuilder<UserDestination>()
                 .itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
@@ -96,10 +118,5 @@ public class BathConfiguration {
                         "VALUES (:userId,:userName,:firstName,:lastName,:gender,:password,:status)")
                 .dataSource(dataSource)
                 .build();
-    }
-
-    @Bean
-    public UserProcessor processor() {
-        return new UserProcessor();
     }
 }
